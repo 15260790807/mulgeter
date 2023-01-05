@@ -45,10 +45,16 @@ func NewMulgeter(url string) *Mulgeter {
 }
 
 // GetLength 获取长度
+// GetLength 获取长度
 func (m *Mulgeter) GetLength() int {
-	headres, _ := http.Head(m.requestURL)
+	headres, err := http.Head(m.requestURL)
+	if err != nil || headres.StatusCode != 200 {
+		m.length = 0
+		return 0
+	}
 	longi, _ := strconv.Atoi(headres.Header.Get("Content-length"))
 	m.length = longi
+	fmt.Println("长度", longi)
 	return longi
 }
 
