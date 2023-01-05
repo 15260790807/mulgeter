@@ -28,7 +28,7 @@ type Mulgeter struct {
 	overnums   int
 	filename   string
 	fileext    string
-	requestUrl string
+	requestURL string
 	TestInterface
 }
 
@@ -39,14 +39,14 @@ func NewMulgeter(url string) *Mulgeter {
 	filename := urlslice[len(urlslice)-1]
 	fmt.Printf("名字%s", filename)
 	return &Mulgeter{
-		requestUrl: url,
+		requestURL: url,
 		filename:   filename,
 	}
 }
 
 // GetLength 获取长度
 func (m *Mulgeter) GetLength() int {
-	headres, _ := http.Head(m.requestUrl)
+	headres, _ := http.Head(m.requestURL)
 	longi, _ := strconv.Atoi(headres.Header.Get("Content-length"))
 	m.length = longi
 	return longi
@@ -110,7 +110,7 @@ func (m *Mulgeter) BeginDownload() error {
 		go func() {
 			str := fmt.Sprintf("bytes=%d-%d", startt, endt)
 			fmt.Println(str)
-			reqObj, err := http.NewRequest("GET", m.requestUrl, nil)
+			reqObj, err := http.NewRequest("GET", m.requestURL, nil)
 			if err != nil {
 				fmt.Println("错误")
 			}
