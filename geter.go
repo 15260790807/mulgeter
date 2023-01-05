@@ -1,6 +1,7 @@
 package mulgeter
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"math"
@@ -12,11 +13,15 @@ import (
 	"time"
 )
 
+// FENPIAN 分片大小
 const FENPIAN = 2048
 
+// TestInterface 测试接口
 type TestInterface interface {
 	Read()
 }
+
+// Mulgeter 下载器
 type Mulgeter struct {
 	length     int
 	tasknums   int
@@ -27,6 +32,7 @@ type Mulgeter struct {
 	TestInterface
 }
 
+// NewMulgeter 实例化
 func NewMulgeter(url string) *Mulgeter {
 	urlslice := strings.Split(url, "/")
 	fmt.Printf("%v", urlslice)
@@ -38,29 +44,42 @@ func NewMulgeter(url string) *Mulgeter {
 	}
 }
 
+// GetLength 获取长度
 func (m *Mulgeter) GetLength() int {
 	headres, _ := http.Head(m.requestUrl)
 	longi, _ := strconv.Atoi(headres.Header.Get("Content-length"))
 	m.length = longi
 	return longi
 }
+
+// Length 长度
 func (m *Mulgeter) Length() int {
 	return m.length
 }
 func (m *Mulgeter) Read() {
 	fmt.Println("读取")
 }
-func (m *Mulgeter) CalcTask() {
+
+// CalcTask 计算任务数
+func (m *Mulgeter) CalcTask() error {
+	if m.length <= 0 {
+		return errors.New("文件不存在")
+	}
 	c := float64(m.length) / FENPIAN
 	tx := math.Ceil(c)
 	fmt.Print(tx)
 	m.tasknums = int(int64(tx))
 	fmt.Println("任务数", m.tasknums)
-	return
+	return nil
 }
-func (m *Mulgeter) BeginDownload() {
+
+// BeginDownload 下载
+func (m *Mulgeter) BeginDownload() error {
 	m.Read()
-	m.CalcTask()
+	err := m.CalcTask()
+	if err != nil {
+		return err
+	}
 	var wg sync.WaitGroup
 	startt := 0
 	endt := 0
@@ -119,7 +138,7 @@ func (m *Mulgeter) BeginDownload() {
 	}
 	wg.Wait()
 	m.mergeFile()
-	return
+	return nil
 }
 func (m *Mulgeter) mergeFile() {
 	fmt.Println("下载完成")
